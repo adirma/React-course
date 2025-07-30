@@ -522,30 +522,9 @@
 
   // API Functions
   const fetchRMDData = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/getRMDData`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error fetching RMD data:', error);
-      // Fallback to default data if API fails
-      return {
-        uniformLifetimeTable: {
-          70: 27.4, 71: 26.5, 72: 25.6, 73: 24.7, 74: 23.8, 75: 22.9, 76: 22.0, 77: 21.2, 78: 20.3, 79: 19.5,
-          80: 18.7, 81: 17.9, 82: 17.1, 83: 16.3, 84: 15.5, 85: 14.8, 86: 14.1, 87: 13.4, 88: 12.7, 89: 12.0,
-          90: 11.4, 91: 10.8, 92: 10.2, 93: 9.6, 94: 9.1, 95: 8.6, 96: 8.1, 97: 7.6, 98: 7.1, 99: 6.7,
-          100: 6.3, 101: 5.9, 102: 5.5, 103: 5.2, 104: 4.9, 105: 4.5, 106: 4.2, 107: 3.9, 108: 3.7, 109: 3.4,
-          110: 3.1, 111: 2.9, 112: 2.6, 113: 2.4, 114: 2.1, 115: 1.9
-        },
-        rmdRules: {
-          currentYear: 2025,
-          defaultStartingAge: 73
-        }
-      };
-    }
+    const response = await fetch(`${API_BASE_URL}/getRMDData`);
+    const data = await response.json();
+    return data;
   };
 
   // Utility functions
@@ -768,30 +747,10 @@
   const handleFormSubmit = async (event) => {
     event.preventDefault();
 
-    if (!isDataLoaded) {
-      alert('Please wait for data to load before calculating.');
-      return;
-    }
-
     const currentAge = parseInt(ageField.input.value);
     const iraBalanceText = balanceField.input.value;
     const iraBalance = parseFloat(iraBalanceText.replace(/[$,\s]/g, ''));
     const annualReturn = parseFloat(annualReturnField.input.value);
-
-    if (!currentAge || !iraBalance || !annualReturn) {
-      alert('Please fill in all required fields.');
-      return;
-    }
-
-    if (currentAge < 18 || currentAge > 80) {
-      alert('Please enter a valid current age (18-80).');
-      return;
-    }
-
-    if (iraBalance < 0) {
-      alert('Please enter a valid IRA balance.');
-      return;
-    }
 
     const results = calculateRMD(currentAge, iraBalance, annualReturn);
     updateSummary(results, currentAge);
@@ -801,49 +760,20 @@
 
   // Initialize data loading
   const initializeCalculator = async () => {
-    try {
-      const response = await fetchRMDData();
-      
-      // Check if we got a successful API response
-      if (response.success && response.data) {
-        uniformLifetimeTable = response.data.uniformLifetimeTable;
-        console.log('✅ Successfully loaded data from API:', response.source);
-        console.log('📊 Loaded', Object.keys(response.data.uniformLifetimeTable).length, 'age factors');
-      } else {
-        // If API response format is unexpected, use the direct data
-        uniformLifetimeTable = response.uniformLifetimeTable || response;
-        console.log('⚠️ Using fallback data structure');
-      }
-      
-      isDataLoaded = true;
-      
-      // Hide loading overlay
-      loadingOverlay.style.display = 'none';
-      
-      // Auto-calculate on load
-      setTimeout(() => {
-        handleFormSubmit({ preventDefault: () => {} });
-      }, 100);
-      
-    } catch (error) {
-      console.error('Failed to initialize calculator:', error);
-      loadingOverlay.textContent = 'Failed to load data. Using fallback values.';
-      
-      // Use fallback data
-      uniformLifetimeTable = {
-        70: 27.4, 71: 26.5, 72: 25.6, 73: 24.7, 74: 23.8, 75: 22.9, 76: 22.0, 77: 21.2, 78: 20.3, 79: 19.5,
-        80: 18.7, 81: 17.9, 82: 17.1, 83: 16.3, 84: 15.5, 85: 14.8, 86: 14.1, 87: 13.4, 88: 12.7, 89: 12.0,
-        90: 11.4, 91: 10.8, 92: 10.2, 93: 9.6, 94: 9.1, 95: 8.6, 96: 8.1, 97: 7.6, 98: 7.1, 99: 6.7,
-        100: 6.3, 101: 5.9, 102: 5.5, 103: 5.2, 104: 4.9, 105: 4.5, 106: 4.2, 107: 3.9, 108: 3.7, 109: 3.4,
-        110: 3.1, 111: 2.9, 112: 2.6, 113: 2.4, 114: 2.1, 115: 1.9
-      };
-      isDataLoaded = true;
-      
-      setTimeout(() => {
-        loadingOverlay.style.display = 'none';
-        handleFormSubmit({ preventDefault: () => {} });
-      }, 2000);
+    const response = await fetchRMDData();
+    
+    if (response.success && response.data) {
+      uniformLifetimeTable = response.data.uniformLifetimeTable;
+    } else {
+      uniformLifetimeTable = response.uniformLifetimeTable || response;
     }
+    
+    isDataLoaded = true;
+    loadingOverlay.style.display = 'none';
+    
+    setTimeout(() => {
+      handleFormSubmit({ preventDefault: () => {} });
+    }, 100);
   };
 
   // Add event listeners
@@ -859,4 +789,4 @@
 
   // Add calculator to container
   container.appendChild(calculatorDiv);
-})(document.getElementById('api-calculator-container') || document.getElementById('calculator-container'), document, window); 
+})(container, document, window); 
