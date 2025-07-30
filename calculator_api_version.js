@@ -198,7 +198,7 @@
     });
 
     const ageField = createFormGroup('Current age (Age on December 31 of current year)', 'number', 'currentAge', {
-      value: '25',
+      value: '70',
       min: '18',
       max: '80'
     });
@@ -725,7 +725,10 @@
     };
 
     const populateResultsTable = (results) => {
-      tbody.innerHTML = '';
+      const tableBody = document.getElementById('resultsTableBody');
+      if (!tableBody) return;
+      
+      tableBody.innerHTML = '';
 
       results.forEach(result => {
         if (result.isRMDYear) {
@@ -741,7 +744,7 @@
             <td style="padding: 6px 8px; text-align: center; border: 1px solid #ddd;">${formatCurrency(result.rmdAmount)}</td>
             <td style="padding: 6px 8px; text-align: center; border: 1px solid #ddd;">${formatCurrency(result.endingBalance)}</td>
           `;
-          tbody.appendChild(row);
+          tableBody.appendChild(row);
         }
       });
     };
